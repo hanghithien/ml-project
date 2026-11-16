@@ -1,2 +1,3 @@
-creditcard_cleaned.csv
-creditcard.csv
+data/
+outputs/
+__pycache__/

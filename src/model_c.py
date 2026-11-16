@@ -1,21 +1,79 @@
-from preprocessing import load_and_clean_data, get_train_val_data
-from sklearn.model_selection import StratifiedKFold
+import numpy as np
 from sklearn.preprocessing import RobustScaler
 
-df_clean = load_and_clean_data('./Data/creditcard.csv')
-X, y = get_train_val_data(df_clean)
+from src.config import RAW_DATA_PATH, RANDOM_STATE, TEST_SIZE, COLS_TO_SCALE
+from src.preprocess import load_and_clean_data, split_train_test, get_cv_splitter
+from src.metrics import evaluate_predictions, plot_evaluation_results
 
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+def handle_imbalance(X_train_fold, y_train_fold):
+    """
+    TODO (Optional): Choose technique to handle imbalance data
+    if use class_weight='balanced' directly in model, return default.
+    """
+    return X_train_fold, y_train_fold
 
-for fold, (train_idx, val_idx) in enumerate(skf.split(X, y), 1):
-    X_train, y_train = X.iloc[train_idx].copy(), y.iloc[train_idx].copy()
-    X_val, y_val = X.iloc[val_idx].copy(), y.iloc[val_idx].copy()
-    
-    scaler = RobustScaler()
-    X_train['Log_Amount'] = scaler.fit_transform(X_train[['Log_Amount']])
-    X_val['Log_Amount'] = scaler.transform(X_val[['Log_Amount']])
-    
-    print(f"--- Đang chạy Fold {fold} ---")
-    print(f"Kích thước X_train: {X_train.shape}, Tỷ lệ gian lận: {y_train.mean():.4%}")
-    ## Todo: Implement Model
-    
+def build_model():
+    """
+    TODO: Build Your Model.
+    """
+    raise NotImplementedError("Implement not found")
+
+def run_model_c():
+    # Load data preprocessing 
+    df_clean = load_and_clean_data(RAW_DATA_PATH)
+    X_train_full, X_test, y_train_full, y_test = split_train_test(
+        df_clean, test_size=TEST_SIZE, random_state=RANDOM_STATE
+    )
+    skf = get_cv_splitter()
+    cv_metrics_list = []
+
+    for fold, (train_idx, val_idx) in enumerate(skf.split(X_train_full, y_train_full), 1):
+        X_train = X_train_full.iloc[train_idx].copy()
+        y_train = y_train_full.iloc[train_idx].copy()
+        X_val = X_train_full.iloc[val_idx].copy()
+        y_val = y_train_full.iloc[val_idx].copy()
+
+
+        scaler = RobustScaler()
+        X_train[COLS_TO_SCALE] = scaler.fit_transform(X_train[COLS_TO_SCALE])
+        X_val[COLS_TO_SCALE] = scaler.transform(X_val[COLS_TO_SCALE])
+
+        # =====================================================================
+        # Todo AnyThing
+        # =====================================================================
+        X_train_res, y_train_res = handle_imbalance(X_train, y_train)
+        model = build_model()
+        model.fit(X_train_res, y_train_res)
+
+        y_val_prob = model.predict_proba(X_val)[:, 1]
+        # =====================================================================
+
+        fold_metrics = evaluate_predictions(y_val, y_val_prob)
+        cv_metrics_list.append(fold_metrics)
+        print(f"Fold {fold} -> {fold_metrics}")
+
+    # =========================================================================
+    # Evaluation on test
+    # =========================================================================
+    final_scaler = RobustScaler()
+    X_train_scaled = X_train_full.copy()
+    X_test_scaled = X_test.copy()
+    X_train_scaled[COLS_TO_SCALE] = final_scaler.fit_transform(X_train_scaled[COLS_TO_SCALE])
+    X_test_scaled[COLS_TO_SCALE] = final_scaler.transform(X_test_scaled[COLS_TO_SCALE])
+
+    X_train_res, y_train_res = handle_imbalance(X_train_scaled, y_train_full)
+    final_model = build_model()
+    final_model.fit(X_train_res, y_train_res)
+
+    # Adjust Threshold CV (Cross validation) if needed
+    best_threshold = 0.5
+    y_test_prob = final_model.predict_proba(X_test_scaled)[:, 1]
+
+    test_metrics = evaluate_predictions(y_test, y_test_prob, threshold=best_threshold)
+    print(f"TEST RESULT (MODEL B): {test_metrics}")
+    plot_evaluation_results(y_test, y_test_prob, model_name="Model_B")
+    return final_model, test_metrics
+
+
+if __name__ == "__main__":
+    run_model_c()
