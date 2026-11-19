@@ -18,7 +18,7 @@ def build_model():
     """
     raise NotImplementedError("Implement not found")
 
-def run_model_c():
+def run_model_b():
     # Load data preprocessing 
     df_clean = load_and_clean_data(RAW_DATA_PATH)
     X_train_full, X_test, y_train_full, y_test = split_train_test(
@@ -76,4 +76,4 @@ def run_model_c():
 
 
 if __name__ == "__main__":
-    run_model_c()
+    run_model_b()
