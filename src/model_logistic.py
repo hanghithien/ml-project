@@ -26,7 +26,7 @@ def build_model():
         random_state=RANDOM_STATE,
     )
 
-def run_model_b():
+def run_model_logistic():
     # Load data preprocessing 
     df_clean = load_and_clean_data(RAW_DATA_PATH)
     X_train_full, X_test, y_train_full, y_test = split_train_test(
@@ -84,4 +84,4 @@ def run_model_b():
 
 
 if __name__ == "__main__":
-    run_model_b()
+    run_model_logistic()

@@ -42,7 +42,7 @@ def build_model():
     ])
 
 
-def run_model_b_2():
+def run_model_svm():
     # Load data preprocessing
     df_clean = load_and_clean_data(RAW_DATA_PATH)
     X_train_full, X_test, y_train_full, y_test = split_train_test(
@@ -94,4 +94,4 @@ def run_model_b_2():
 
 
 if __name__ == "__main__":
-    run_model_b_2()
+    run_model_svm()
