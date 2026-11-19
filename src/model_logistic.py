@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import RobustScaler
 
 from src.config import RAW_DATA_PATH, RANDOM_STATE, TEST_SIZE, COLS_TO_SCALE
@@ -14,9 +15,16 @@ def handle_imbalance(X_train_fold, y_train_fold):
 
 def build_model():
     """
-    TODO: Build Your Model.
+    Build Logistic Regression model with balanced class weights.
     """
-    raise NotImplementedError("Implement not found")
+    return LogisticRegression(
+        C=1.0,
+        l1_ratio=0.0,
+        class_weight="balanced",
+        solver="lbfgs",
+        max_iter=1000,
+        random_state=RANDOM_STATE,
+    )
 
 def run_model_b():
     # Load data preprocessing 
@@ -71,7 +79,7 @@ def run_model_b():
 
     test_metrics = evaluate_predictions(y_test, y_test_prob, threshold=best_threshold)
     print(f"TEST RESULT (MODEL B): {test_metrics}")
-    plot_evaluation_results(y_test, y_test_prob, model_name="Model_B")
+    plot_evaluation_results(y_test, y_test_prob, model_name="Model_LOGISTIC")
     return final_model, test_metrics
 
 

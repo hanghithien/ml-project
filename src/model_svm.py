@@ -1,33 +1,49 @@
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import RobustScaler
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import RobustScaler, StandardScaler
+from sklearn.svm import SVC
 
 from src.config import RAW_DATA_PATH, RANDOM_STATE, TEST_SIZE, COLS_TO_SCALE
 from src.preprocess import load_and_clean_data, split_train_test, get_cv_splitter
-from src.metric_model_b import evaluate_predictions, plot_evaluation_results
+from src.metrics import evaluate_predictions, plot_evaluation_results
+
 
 def handle_imbalance(X_train_fold, y_train_fold):
     """
-    TODO (Optional): Choose technique to handle imbalance data
-    if use class_weight='balanced' directly in model, return default.
+    Xử lý mất cân bằng dữ liệu bằng RandomUnderSampler (sampling_strategy=0.05,
+    giữ toàn bộ lớp Fraud và lấy mẫu ngẫu nhiên lớp Normal theo tỷ lệ 20:1).
     """
-    return X_train_fold, y_train_fold
+    rus = RandomUnderSampler(sampling_strategy=0.05, random_state=RANDOM_STATE)
+    return rus.fit_resample(X_train_fold, y_train_fold)
+
 
 def build_model():
     """
-    Build Logistic Regression model with balanced class weights.
+    Build Kernel SVM (RBF) pipeline với StandardScaler và Platt Scaling
+    qua CalibratedClassifierCV để xuất xác suất dự đoán ổn định.
     """
-    return LogisticRegression(
-        C=1.0,
-        l1_ratio=0.0,
-        class_weight="balanced",
-        solver="lbfgs",
-        max_iter=1000,
+    svc = SVC(
+        kernel="rbf",
+        C=2.0,
+        gamma="scale",
         random_state=RANDOM_STATE,
     )
+    calibrated_svc = CalibratedClassifierCV(
+        estimator=svc,
+        cv=5,
+        method="sigmoid",
+        ensemble=False,
+    )
+    return Pipeline([
+        ("scaler", StandardScaler()),
+        ("svm", calibrated_svc),
+    ])
 
-def run_model_b():
-    # Load data preprocessing 
+
+def run_model_b_2():
+    # Load data preprocessing
     df_clean = load_and_clean_data(RAW_DATA_PATH)
     X_train_full, X_test, y_train_full, y_test = split_train_test(
         df_clean, test_size=TEST_SIZE, random_state=RANDOM_STATE
@@ -41,20 +57,15 @@ def run_model_b():
         X_val = X_train_full.iloc[val_idx].copy()
         y_val = y_train_full.iloc[val_idx].copy()
 
-
         scaler = RobustScaler()
         X_train[COLS_TO_SCALE] = scaler.fit_transform(X_train[COLS_TO_SCALE])
         X_val[COLS_TO_SCALE] = scaler.transform(X_val[COLS_TO_SCALE])
 
-        # =====================================================================
-        # Todo AnyThing
-        # =====================================================================
         X_train_res, y_train_res = handle_imbalance(X_train, y_train)
         model = build_model()
         model.fit(X_train_res, y_train_res)
 
         y_val_prob = model.predict_proba(X_val)[:, 1]
-        # =====================================================================
 
         fold_metrics = evaluate_predictions(y_val, y_val_prob)
         cv_metrics_list.append(fold_metrics)
@@ -73,15 +84,14 @@ def run_model_b():
     final_model = build_model()
     final_model.fit(X_train_res, y_train_res)
 
-    # Adjust Threshold CV (Cross validation) if needed
     best_threshold = 0.5
     y_test_prob = final_model.predict_proba(X_test_scaled)[:, 1]
 
     test_metrics = evaluate_predictions(y_test, y_test_prob, threshold=best_threshold)
-    print(f"TEST RESULT (MODEL B): {test_metrics}")
-    plot_evaluation_results(y_test, y_test_prob, model_name="Model_B")
+    print(f"TEST RESULT (MODEL B_2 - SVM): {test_metrics}")
+    plot_evaluation_results(y_test, y_test_prob, model_name="Model_SVM")
     return final_model, test_metrics
 
 
 if __name__ == "__main__":
-    run_model_b()
+    run_model_b_2()

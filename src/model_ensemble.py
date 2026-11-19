@@ -84,7 +84,7 @@ def run_model_ensemble(model = build_model(), data = load_and_clean_data(RAW_DAT
 
     test_metrics = evaluate_predictions(y_test, y_test_prob, threshold=best_threshold)
     print(f"TEST RESULT (MODEL ENSEMBLE): {test_metrics}")
-    plot_evaluation_results(y_test, y_test_prob, model_name="Model_ENSEMBLEgit ")
+    plot_evaluation_results(y_test, y_test_prob, model_name="Model_ENSEMBLE")
     return final_model, test_metrics
 
 
