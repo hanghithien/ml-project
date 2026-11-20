@@ -1,10 +1,30 @@
 % Phụ trách: Tùng
 % Nhiệm vụ: Tiền xử lý dữ liệu — Thực hiện EDA
 
-\subsection{Phân tích dữ liệu khám phá (EDA)}\label{subsec:eda}
-% TODO (Tùng): Trình bày kết quả khám phá dữ liệu từ notebook/EDA.ipynb:
-% - Kích thước dữ liệu, kiểu dữ liệu, giá trị thiếu (missing values) và dòng trùng lặp (duplicates).
-% - Tỷ lệ mất cân bằng giữa các lớp (Class 0: Normal vs Class 1: Fraud).
-% - Phân bố của Time, Amount và các đặc trưng V1--V28; ma trận tương quan và các biểu đồ minh họa.
+\subsection{Khai phá dữ liệu}\label{subsec:eda}
+\subsubsection*{Tổng quan dữ liệu}
+Tập dữ liệu này bao gồm các giao dịch bằng thẻ tín dụng được thực hiện vào tháng 9 năm 2013 bởi các chủ thẻ tại châu Âu.
+Tập dữ liệu ghi lại các giao dịch diễn ra trong hai ngày, trong đó có 492 giao dịch gian lận trên tổng số 284.807 giao dịch.
 
-\textit{[Nội dung mục Phân tích dữ liệu khám phá (EDA) đang chờ hoàn thiện.]}
+Tập dữ liệu bao gồm các biến đầu vào đã được xử lý bằng PCA. Vì lý do bảo mật nên thông tin của các đặc trưng gốc không được cung cấp. Các đặc trưng từ $V1, V2, …, V28$ là những thành phần chính thu được từ PCA; các đặc trưng duy nhất không trải qua biến đổi PCA là \textbf{Time} và \textbf{Amount}.
+
+Trong đó:
+\begin{itemize}
+    \item \textbf{Time}: ghi lại số giây trôi qua giữa mỗi giao dịch và giao dịch đầu tiên trong tập dữ liệu (0: Giao dịch đầu tiên, 10: Giao dịch xảy ra 10 giây sau giao dịch đầu tiên, 100:  Giao dịch xảy ra 100 giây sau giao dịch đầu tiên)
+    \item \textbf{Amount}: là số tiền của giao dịch.
+\end{itemize}
+  
+Feature \textbf{Class} là biến mục tiêu nhị phân với $1$ phản ánh giao dịch gian lận và $0$ trong các trường hợp còn lại.
+
+\begin{table}[htbp]
+\centering
+\caption{Tổng quan dữ liệu của tập dữ liệu gồm $284807$ dòng và $31$ cột}
+    \begin{tabular}{|clcc|}
+    \hline
+    \textbf{STT} & \textbf{Đặc trưng} & \textbf{Missing value} & \textbf{Kiểu dữ liệu} \\ \hline
+    0 & Time & 0 & float64 \\ \hline
+    1 -- 28 & V1 -- 28 & 0 & float64 \\ \hline
+    29 & Amount & 0 & float64 \\ \hline
+    30 & Class & 0 & int64 \\ \hline
+    \end{tabular}
+\end{table}

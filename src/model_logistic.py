@@ -4,7 +4,7 @@ from sklearn.preprocessing import RobustScaler
 
 from src.config import RAW_DATA_PATH, RANDOM_STATE, TEST_SIZE, COLS_TO_SCALE
 from src.preprocess import load_and_clean_data, split_train_test, get_cv_splitter
-from src.metric_model_b import evaluate_predictions, plot_evaluation_results
+from src.metrics import evaluate_predictions, plot_evaluation_results
 
 def handle_imbalance(X_train_fold, y_train_fold):
     """
@@ -26,7 +26,7 @@ def build_model():
         random_state=RANDOM_STATE,
     )
 
-def run_model_b():
+def run_model_logistic():
     # Load data preprocessing 
     df_clean = load_and_clean_data(RAW_DATA_PATH)
     X_train_full, X_test, y_train_full, y_test = split_train_test(
@@ -79,9 +79,9 @@ def run_model_b():
 
     test_metrics = evaluate_predictions(y_test, y_test_prob, threshold=best_threshold)
     print(f"TEST RESULT (MODEL B): {test_metrics}")
-    plot_evaluation_results(y_test, y_test_prob, model_name="Model_B")
+    plot_evaluation_results(y_test, y_test_prob, model_name="Model_LOGISTIC")
     return final_model, test_metrics
 
 
 if __name__ == "__main__":
-    run_model_b()
+    run_model_logistic()

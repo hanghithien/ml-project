@@ -2,3 +2,29 @@ data/
 outputs/
 __pycache__/
 .vscode/
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.lol
+# Build directories
+build/
+out/
+
+# OS generated files
+.DS_Store
+Thumbs.db
