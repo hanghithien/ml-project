@@ -1,0 +1,143 @@
+% 'draft' mode can be used to speed up compilation
+\documentclass[twoside,final]{hcmut-report}
+\usepackage{codespace}
+
+% Encodings
+\usepackage{gensymb,textcomp}
+
+% Better tables
+% Wide tables go to https://tex.stackexchange.com/q/332902
+\usepackage{array,longtable,multicol,multirow,siunitx,tabularx}
+
+% Better enum
+\usepackage{enumitem}
+
+% Graphics
+\usepackage{caption,float}
+\graphicspath{{./}{../outputs/figures/}}
+
+% Add options for figures, like max width, framing, etc.
+\usepackage[export]{adjustbox}
+
+% References
+% Use \Cref{} instead of \ref{}
+\usepackage[nameinlink]{cleveref}
+
+% Configurations
+\coursename{Machine Learning}
+\reporttype{Báo cáo Bài tập lớn}
+\title{Tên đề tài báo cáo}
+\advisor{& Giảng viên hướng dẫn &}
+\stuname{%
+  & Phạm Viết Trường & 2413749 \\
+  & Tên B & MSSV \\
+  & Tên C & MSSV \\
+   & Tên D & MSSV \\
+  % & SV & MSSV \\
+}
+
+% Set depth of numbering for counters
+\AtBeginDocument{\counterwithin{lstlisting}{section}}
+
+% Rename some sections (uncomment to switch to Vietnamese headings)
+%\AtBeginDocument{\renewcommand*{\contentsname}{Mục lục}}
+%\AtBeginDocument{\renewcommand*{\listfigurename}{Danh sách hình ảnh}}
+%\AtBeginDocument{\renewcommand*{\listtablename}{Danh sách bảng}}
+%\AtBeginDocument{\renewcommand*{\lstlistlistingname}{Danh sách đoạn mã}}
+%\AtBeginDocument{\renewcommand*{\refname}{Tài liệu tham khảo}}
+%\AtBeginDocument{\renewcommand*{\bibname}{Tài liệu tham khảo}}
+
+\begin{document}
+\coverpage%
+
+%\section*{Danh sách thành viên \& Phân công}
+%\newcounter{memberrowno}
+%\setcounter{memberrowno}{0}
+%\begin{center}
+%  \begin{tabular}{>{\stepcounter{memberrowno}\thememberrowno}llcc}
+%    \toprule
+%    \multicolumn{1}{c}{\textbf{STT}} & \textbf{Họ và tên} & \textbf{MSSV} & \textbf{Đóng góp} \\
+%    \midrule
+%                                     & Tùng               & xxxxxxx       & 100\%             \\
+%                                     & Thành viên B       & xxxxxxx       & 100\%             \\
+%                                     & Thành viên C       & xxxxxxx       & 100\%             \\
+%                                     & Hiền               & xxxxxxx       & 100\%             \\
+%    \bottomrule
+%  \end{tabular}
+%\end{center}
+%\clearpage
+
+\tableofcontents
+\listoffigures
+\listoftables
+\lstlistoflistings{}
+
+\clearpage
+
+% ==============================================================================
+% 1. Giới thiệu bài toán
+% ==============================================================================
+\section{Giới thiệu bài toán}\label{sec:gioi-thieu}
+\input{chapters/01_gioi_thieu/01_dat_van_de.tex}
+\input{chapters/01_gioi_thieu/02_muc_tieu_pham_vi.tex}
+
+% ==============================================================================
+% 2. Tiền xử lý dữ liệu
+% ==============================================================================
+\clearpage
+\section{Tiền xử lý dữ liệu}\label{sec:tien-xu-ly}
+\input{chapters/02_tien_xu_ly/01_eda.tex}
+\input{chapters/02_tien_xu_ly/02_pipeline_tien_xu_ly.tex}
+\input{chapters/02_tien_xu_ly/03_phan_chia_du_lieu.tex}
+\input{chapters/02_tien_xu_ly/04_xu_ly_nang_cao.tex}
+
+% ==============================================================================
+% 3. Mô hình và phương pháp
+% ==============================================================================
+\clearpage
+\section{Mô hình và phương pháp}\label{sec:mo-hinh-phuong-phap}
+
+% \subsection{Nhóm mô hình Baseline}\label{subsec:baseline}
+\input{chapters/03_mo_hinh/01_logistic_regression.tex}
+\input{chapters/03_mo_hinh/02_ANN.tex}
+% Optional baseline (comment dòng dưới nếu không sử dụng):
+\input{chapters/03_mo_hinh/03_svm_naive_bayes.tex}
+
+% Optional advanced models (comment mục dưới nếu không sử dụng):
+% \subsection{Nhóm mô hình nâng cao (Optional)}\label{subsec:mo-hinh-nang-cao}
+\input{chapters/03_mo_hinh/04_ensemble_learning.tex}
+% \input{chapters/03_mo_hinh/05_isolation_forest.tex}
+
+% ==============================================================================
+% 4. Thực nghiệm và kết quả
+% ==============================================================================
+\clearpage
+\section{Thực nghiệm và kết quả}\label{sec:thuc-nghiem-ket-qua}
+\input{chapters/04_thuc_nghiem/01_metric_danh_gia.tex}
+\input{chapters/04_thuc_nghiem/02_ket_qua_truc_quan.tex}
+
+% ==============================================================================
+% 5. Thảo luận 
+% ==============================================================================
+\clearpage
+\section{Thảo luận}\label{sec:thao-luan}
+\input{chapters/05_thao_luan/01_phan_tich_so_sanh.tex}
+\input{chapters/05_thao_luan/02_han_che_thach_thuc.tex}
+
+% ==============================================================================
+% 6. Kết luận và hướng phát triển
+% ==============================================================================
+\clearpage
+\section{Kết luận và hướng phát triển}\label{sec:ket-luan}
+\input{chapters/06_ket_luan/01_ket_luan.tex}
+\input{chapters/06_ket_luan/02_huong_phat_trien.tex}
+
+% ==============================================================================
+% Tài liệu tham khảo
+% ==============================================================================
+\clearpage
+\bibliographystyle{plain}
+\bibliography{refs/example.bib}
+\nocite{*}
+
+\end{document}

@@ -1,0 +1,89 @@
+\subsection{Logistic Regression}
+
+\subsubsection{Cơ sở lý thuyết}
+
+\paragraph{1. Biểu diễn bài toán và Hàm dự đoán (Sigmoid)}\mbox{}\\
+Xét tập dữ liệu huấn luyện gồm $N$ mẫu $\{(\mathbf{x}_n, y_n)\}_{n=1}^{N}$, trong đó mỗi mẫu được biểu diễn bởi vector đặc trưng mở rộng $\mathbf{x}_n = [1, x_{n1}, x_{n2}, \dots, x_{n(M-1)}]^T \in \mathbb{R}^M$ (với đặc trưng giả $x_{n0} = 1$ ứng với hệ số chặn) và nhãn nhị phân $y_n \in \{0, 1\}$ đại diện cho hai phân lớp $\mathcal{C}_0$ (bình thường) và $\mathcal{C}_1$ (gian lận).
+
+Logistic Regression là mô hình phân lớp tuyến tính có bản chất phân biệt (\textit{discriminative model}), ước lượng trực tiếp xác suất hậu nghiệm thuộc lớp $\mathcal{C}_1$ bằng cách đưa tổ hợp tuyến tính $z = \mathbf{w}^T\mathbf{x}$ qua hàm kích hoạt Sigmoid $\sigma(\cdot)$:
+\begin{equation}
+    \hat{y} \triangleq p(\mathcal{C}_1 \mid \mathbf{x}, \mathbf{w}) = \sigma(\mathbf{w}^T \mathbf{x}) = \frac{1}{1 + e^{-\mathbf{w}^T \mathbf{x}}} \in (0, 1)
+\end{equation}
+trong đó $\mathbf{w} = [w_0, w_1, \dots, w_{M-1}]^T \in \mathbb{R}^M$ là vector trọng số cần học và xác suất thuộc lớp $\mathcal{C}_0$ là $p(\mathcal{C}_0 \mid \mathbf{x}, \mathbf{w}) = 1 - \hat{y}$. Với ngưỡng quyết định $\lambda \in (0, 1)$ (mặc định $\lambda = 0.5$, ứng với siêu phẳng phân tách tuyến tính $\mathbf{w}^T\mathbf{x} = 0$), nhãn dự đoán $\hat{t}$ được xác định theo quy tắc:
+\begin{equation}
+    \hat{t} = \begin{cases} 
+        1 & \text{nếu } \hat{y} \ge \lambda \\
+        0 & \text{nếu } \hat{y} < \lambda 
+    \end{cases}
+\end{equation}
+Đồ thị hàm kích hoạt Sigmoid và đạo hàm $f'(z) = f(z)(1 - f(z))$ được minh họa tại Hình~\ref{fig:logistic-reg-sigmoid}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{graphics/logistic_reg.png}
+    \caption{Đồ thị hàm kích hoạt Sigmoid $f(z) = \frac{1}{1 + e^{-z}}$ và đạo hàm $f'(z) = f(z)(1 - f(z))$}
+    \label{fig:logistic-reg-sigmoid}
+\end{figure}
+
+\paragraph{2. Hàm mất mát Binary Cross-Entropy có trọng số}\mbox{}\\
+Với mỗi mẫu $\langle \mathbf{x}_n, y_n \rangle$ tuân theo phân phối Bernoulli, xác suất có điều kiện có dạng $p(y_n \mid \mathbf{x}_n, \mathbf{w}) = \hat{y}_n^{y_n}(1 - \hat{y}_n)^{1 - y_n}$. Áp dụng nguyên lý Hợp lý cực đại (MLE), việc cực đại hóa hàm hợp lý $\prod_{n=1}^{N} p(y_n \mid \mathbf{x}_n, \mathbf{w})$ tương đương với cực tiểu hóa hàm mất mát đối số hợp lý âm (Binary Cross-Entropy):
+\begin{equation}
+    \mathcal{L}(\mathbf{w}) = -\frac{1}{N} \sum_{n=1}^{N} \alpha_{y_n} \left[ y_n \log \hat{y}_n + (1 - y_n) \log(1 - \hat{y}_n) \right]
+\end{equation}
+Để xử lý mất cân bằng dữ liệu ($N_1 \ll N_0$), hàm mất mát được tích hợp hệ số trọng số lớp $\alpha_{y_n}$ (\texttt{class\_weight="balanced"}), gán trọng số tỷ lệ nghịch với tần suất xuất hiện của từng lớp $c \in \{0, 1\}$: $\alpha_c = \frac{N}{2 N_c}$.
+
+\paragraph{3. Điều chuẩn (Regularization) và Tối ưu hóa tham số}\mbox{}\\
+Nhằm kiểm soát độ lớn trọng số và hạn chế quá khớp (\textit{overfitting}), thành phần phạt điều chuẩn được cộng vào hàm mất mát (không phạt hệ số chặn $w_0$):
+\begin{equation}
+    \mathcal{J}(\mathbf{w}) = \mathcal{L}(\mathbf{w}) + \frac{1}{NC} \left( \frac{1 - \rho}{2} \sum_{j=1}^{M-1} w_j^2 + \rho \sum_{j=1}^{M-1} |w_j| \right)
+\end{equation}
+trong đó $C > 0$ là nghịch đảo cường độ điều chuẩn ($C$ càng nhỏ thì lực phạt càng mạnh) và $\rho \in [0, 1]$ (\texttt{l1\_ratio}) điều tiết giữa chuẩn \textbf{L2} ($\rho = 0$, thu nhỏ đồng đều trọng số giúp nghiệm ổn định) và chuẩn \textbf{L1} ($\rho = 1$, tạo nghiệm thưa giúp chọn lọc đặc trưng).
+
+Vì $\mathcal{J}(\mathbf{w})$ là hàm lồi nhưng phương trình đạo hàm bằng $0$ không có nghiệm giải tích dạng đóng, tham số $\mathbf{w}$ được tìm bằng thuật toán lặp \textbf{L-BFGS} (Limited-memory BFGS). Đây là phương pháp giả Newton (Quasi-Newton) sử dụng gradient bậc nhất $\nabla_{\mathbf{w}}\mathcal{L}(\mathbf{w}) = \frac{1}{N}\mathbf{X}^T \mathbf{A} (\hat{\mathbf{y}} - \mathbf{y})$ (với $\mathbf{A} = \text{diag}(\alpha_{y_n})$) để xấp xỉ nghịch đảo ma trận Hessian trong bộ nhớ giới hạn, giúp hội tụ nhanh và ổn định.
+
+\subsubsection{Áp dụng mô hình vào bài toán}
+
+\paragraph{1. Môi trường và Thư viện sử dụng}\mbox{}\\
+Mô hình được cài đặt bằng ngôn ngữ \textbf{Python} với hai thư viện chính:
+\begin{itemize}
+    \item \texttt{scikit-learn}: Cung cấp lớp \texttt{LogisticRegression} để huấn luyện mô hình và \texttt{RobustScaler} để chuẩn hóa đặc trưng.
+    \item \texttt{NumPy}: Hỗ trợ tính toán mảng và xử lý vector hóa dữ liệu.
+\end{itemize}
+
+\paragraph{2. Quy trình tiền xử lý và Huấn luyện}\mbox{}\\
+Quy trình thực nghiệm trong tệp \texttt{src/model\_b.py} được thiết kế nhằm ngăn chặn rò rỉ dữ liệu (\textit{data leakage}):
+\begin{enumerate}
+    \item \textbf{Phân chia dữ liệu phân tầng:} Tập dữ liệu sau làm sạch được chia thành tập huấn luyện toàn phần và tập kiểm tra độc lập, kết hợp kiểm định chéo \textit{Stratified K-Fold} để giữ nguyên tỷ lệ lớp gian lận trên từng \textit{fold}.
+    \item \textbf{Chuẩn hóa kháng ngoại lai:} Các đặc trưng số (\texttt{COLS\_TO\_SCALE}) được chuẩn hóa bằng \texttt{RobustScaler} dựa trên trung vị ($Q_2$) và khoảng tứ phân vị ($\text{IQR} = Q_3 - Q_1$) nhằm giảm ảnh hưởng của các điểm ngoại lai (\textit{outliers}):
+    \begin{equation}
+        x' = \frac{x - Q_2(x)}{Q_3(x) - Q_1(x)}
+    \end{equation}
+    \item \textbf{Cô lập tập kiểm định và Đánh giá:} Trong mỗi \textit{fold}, bộ chuẩn hóa chỉ khớp tham số (\texttt{fit\_transform}) trên tập huấn luyện con rồi biến đổi (\texttt{transform}) sang tập kiểm định. Sau bước kiểm định chéo, mô hình cuối cùng được huấn luyện lại trên toàn bộ tập huấn luyện đã chuẩn hóa và đánh giá trên tập kiểm tra với ngưỡng phân loại $\lambda = 0.5$ thông qua mô-đun \texttt{src/metric\_model\_b.py}.
+\end{enumerate}
+
+\paragraph{3. Thiết lập siêu tham số}\mbox{}\\
+Thay vì sinh mẫu tổng hợp dễ làm nhiễu ranh giới phân tách tuyến tính, mô hình giữ nguyên dữ liệu gốc và xử lý mất cân bằng trực tiếp bằng tham số \texttt{class\_weight="balanced"}. Cấu hình chi tiết trong hàm \texttt{build\_model()} được tổng hợp tại Bảng~\ref{tab:lr_hyperparams}.
+
+\begin{table}[H]
+\centering
+\caption{Thiết lập siêu tham số cho mô hình Logistic Regression (\texttt{src/model\_b.py})}
+\label{tab:lr_hyperparams}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|l|p{8.4cm}|}
+\hline
+\textbf{Siêu tham số} & \textbf{Giá trị} & \textbf{Mục đích sử dụng} \\
+\hline
+\texttt{C} & \texttt{1.0} & Nghịch đảo cường độ điều chuẩn mặc định, cân bằng giữa độ khớp và khả năng tổng quát hóa. \\
+\hline
+\texttt{l1\_ratio} & \texttt{0.0} & Áp dụng điều chuẩn \textbf{L2 (Ridge)} thuần túy, giúp thu nhỏ đồng đều trọng số và ổn định nghiệm. \\
+\hline
+\texttt{class\_weight} & \texttt{"balanced"} & Gán trọng số lớp tỷ lệ nghịch tần suất ($\alpha_c = N / (2N_c)$), khắc phục thiên lệch về lớp đa số. \\
+\hline
+\texttt{solver} & \texttt{"lbfgs"} & Thuật toán tối ưu giả Newton xấp xỉ ma trận Hessian, hội tụ nhanh với hàm mất mát L2. \\
+\hline
+\texttt{max\_iter} & \texttt{1000} & Tăng giới hạn vòng lặp tối đa để đảm bảo hội tụ hoàn toàn khi trọng số lớp chênh lệch lớn. \\
+\hline
+\texttt{random\_state} & \texttt{RANDOM\_STATE} & Cố định hạt giống ngẫu nhiên nhằm đảm bảo tính tái lập kết quả thực nghiệm. \\
+\hline
+\end{tabular}
+\end{table}
