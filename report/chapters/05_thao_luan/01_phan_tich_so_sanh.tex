@@ -19,21 +19,19 @@
 \end{itemize}
 
 \paragraph{3. Artificial Neural Network -- ANN (\texttt{src/model\_ANN.py})}\mbox{}
-% TODO (Thành viên phụ trách tổng hợp / ANN): Điền số liệu thực nghiệm và nhận xét theo 4 ý mẫu dưới đây.
 \begin{itemize}
-    \item \textbf{Hiệu năng qua 5-fold CV:} \textit{[Điền khoảng dao động AUPRC, Recall, Precision, F1 qua 5 fold của mô hình ANN.]}
-    \item \textbf{Hiệu năng trên tập Test:} \textit{[Điền AUPRC, Recall, Precision, F1 và TP/FP/FN/TN trên tập Test tại $t = 0.5$.]}
-    \item \textbf{Ưu điểm:} \textit{[Nêu ưu điểm chính của ANN trên bộ dữ liệu này, ví dụ khả năng học biểu diễn phi tuyến nhiều tầng.]}
-    \item \textbf{Nhược điểm:} \textit{[Nêu nhược điểm chính, ví dụ nhạy cảm với siêu tham số, dễ overfitting hoặc ít khả năng diễn giải.]}
+    \item \textbf{Hiệu năng qua 5-fold CV:} Tại ngưỡng $t = 0.5$, mô hình đạt \texttt{AUPRC} cao trong khoảng $0.723 - 0.870$ (trung bình $\approx 0.818$, cao nhất ở Fold 5 đạt $0.870$), \texttt{Recall} dao động $0.653 - 0.882$, \texttt{Precision} rất cao từ $0.788$ đến $1.000$ (Fold 1 không có báo nhầm nào, $\text{FP} = 0$) và \texttt{F1} đạt $0.741 - 0.855$.
+    \item \textbf{Hiệu năng trên tập Test:} Mô hình đạt \texttt{AUPRC} $= 0.825$ (cao nhất trong 4 mô hình), \texttt{Recall} $= 0.747$ (phát hiện $71/95$ ca gian lận, bỏ sót $\text{FN} = 24$), \texttt{Precision} $= 0.887$ (chỉ $\text{FP} = 9$ ca báo nhầm trên $56{,}651$ giao dịch bình thường, $\text{TN} = 56{,}642$) và \texttt{F1} $= 0.811$.
+    \item \textbf{Ưu điểm:} Kiến trúc mạng hai tầng ẩn \texttt{(64, 32)} kết hợp hàm kích hoạt ReLU và cơ chế \texttt{early\_stopping=True} giúp học tốt các đặc trưng phi tuyến phức tạp, đạt năng lực xếp hạng xác suất tổng thể (\texttt{AUPRC}) cao nhất đồng thời duy trì tỷ lệ báo nhầm rất thấp ngay tại ngưỡng mặc định $t = 0.5$.
+    \item \textbf{Nhược điểm:} Do huấn luyện trên phân phối gốc mất cân bằng mà không áp dụng trọng số lớp nên độ nhạy \texttt{Recall} tại $t = 0.5$ còn bảo thủ (bỏ sót $24$ ca gian lận); hiệu năng giữa các \textit{fold} có độ dao động nhất định (Fold 3 giảm xuống \texttt{AUPRC} $= 0.723$), ít khả năng diễn giải trực tiếp như mô hình tuyến tính và nhạy với siêu tham số khởi tạo.
 \end{itemize}
 
 \paragraph{4. Ensemble Learning -- XGBoost (\texttt{src/model\_ensemble.py})}\mbox{}
-% TODO (Thành viên phụ trách tổng hợp / Ensemble): Điền số liệu thực nghiệm và nhận xét theo 4 ý mẫu dưới đây.
 \begin{itemize}
-    \item \textbf{Hiệu năng qua 5-fold CV:} \textit{[Điền khoảng dao động AUPRC, Recall, Precision, F1 qua 5 fold của mô hình XGBoost.]}
-    \item \textbf{Hiệu năng trên tập Test:} \textit{[Điền AUPRC, Recall, Precision, F1 và TP/FP/FN/TN trên tập Test tại $t = 0.5$.]}
-    \item \textbf{Ưu điểm:} \textit{[Nêu ưu điểm chính của XGBoost trên dữ liệu dạng bảng mất cân bằng, ví dụ khả năng chia cắt phi tuyến mạnh và ổn định.]}
-    \item \textbf{Nhược điểm:} \textit{[Nêu nhược điểm chính, ví dụ nguy cơ thiên lệch về lớp đa số nếu không tinh chỉnh trọng số/ngưỡng hoặc chi phí tinh chỉnh siêu tham số.]}
+    \item \textbf{Hiệu năng qua 5-fold CV:} Mô hình duy trì độ ổn định rất cao qua 5 \textit{folds} với \texttt{AUPRC} từ $0.782$ đến $0.859$ (trung bình $\approx 0.822$, cao nhất ở Fold 5 đạt $0.859$), \texttt{Recall} trong khoảng $0.680 - 0.816$, \texttt{Precision} luôn ở mức rất cao ($0.886 - 0.983$) và \texttt{F1} đạt $0.779 - 0.874$.
+    \item \textbf{Hiệu năng trên tập Test:} Tại $t = 0.5$, mô hình đạt \texttt{AUPRC} $= 0.764$, \texttt{Recall} $= 0.726$ ($69/95$ ca gian lận, $\text{FN} = 26$), \texttt{Precision} $= 0.958$ (chỉ $\text{FP} = 3$ ca báo nhầm trên $56{,}651$ giao dịch bình thường, $\text{TN} = 56{,}648$) và \texttt{F1} $= 0.826$ (cao nhất trong 4 mô hình tại $t = 0.5$).
+    \item \textbf{Ưu điểm:} Tổ hợp 100 cây quyết định nông (\texttt{max\_depth=3}) kết hợp điều chuẩn L2 và thuật toán \texttt{tree\_method="hist"} cho tốc độ huấn luyện rất nhanh, ít biến thiên giữa các \textit{fold} và gần như triệt tiêu cảnh báo giả ($\text{FP} = 3$, \texttt{Precision} $= 95.8\%$), rất phù hợp với dữ liệu bảng.
+    \item \textbf{Nhược điểm:} Do chưa thiết lập trọng số lớp (\texttt{scale\_pos\_weight}) hoặc hạ ngưỡng quyết định nên mô hình có xu hướng thận trọng với lớp thiểu số, dẫn đến \texttt{Recall} trên tập Test ($0.726$) thấp nhất trong 4 mô hình tại $t = 0.5$ và \texttt{AUPRC} trên Test ($0.764$) có độ sụt giảm nhẹ so với trung bình CV ($0.822$).
 \end{itemize}
 
 \subsubsection{Phân tích so sánh các mô hình tại ngưỡng $t = 0.5$}
@@ -49,22 +47,22 @@ Bảng~\ref{tab:compare_4_models_t05} tổng hợp kết quả đánh giá của
 \hline
 \textbf{Mô hình} & \textbf{AUPRC} & \textbf{Recall} & \textbf{Precision} & \textbf{F1} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
 \hline
-Logistic Regression & $0.680$ & $0.874$ & $0.056$ & $0.105$ & $83$ & $1403$ & $12$ & $55248$ \\
+Logistic Regression & $0.680$ & $\mathbf{0.874}$ & $0.056$ & $0.105$ & $83$ & $1403$ & $12$ & $55248$ \\
 \hline
 SVM (RBF) & $0.719$ & $0.768$ & $0.745$ & $0.756$ & $73$ & $25$ & $22$ & $56626$ \\
 \hline
-ANN & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ \\
+ANN & $\mathbf{0.825}$ & $0.747$ & $0.887$ & $0.811$ & $71$ & $9$ & $24$ & $56642$ \\
 \hline
-XGBoost & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ \\
+XGBoost & $0.764$ & $0.726$ & $\mathbf{0.958}$ & $\mathbf{0.826}$ & $69$ & $3$ & $26$ & $56648$ \\
 \hline
 \end{tabular}
 \end{table}
 
 \begin{itemize}
-    \item \textbf{Chỉ số \texttt{AUPRC}:} Trong hai mô hình baseline của nhóm tuyến tính/lề, SVM ($0.719$) vượt trội hơn Logistic Regression ($0.680$) nhờ hạt nhân RBF nắm bắt được cấu trúc phi tuyến cục bộ của các giao dịch gian lận. \textit{[Thành viên tổng hợp bổ sung so sánh với ANN, XGBoost và chỉ ra mô hình có AUPRC cao nhất trong 4 mô hình cùng nguyên nhân.]}
-    \item \textbf{Chỉ số \texttt{Recall}:} Ở ngưỡng $t = 0.5$, Logistic Regression đạt độ nhạy rất cao ($0.874$, vượt mức $0.768$ của SVM) do cơ chế \texttt{class\_weight="balanced"} phạt nặng lỗi bỏ sót lớp gian lận ($\sim 600$ lần), kéo siêu phẳng dịch sang phía lớp bình thường. \textit{[Thành viên tổng hợp đối chiếu thêm với ANN, XGBoost và kết luận mô hình có Recall cao nhất tại $t = 0.5$.]}
-    \item \textbf{Chỉ số \texttt{Precision}:} SVM đạt $0.745$, cao hơn vượt trội so với $0.056$ của Logistic Regression nhờ chỉ giảm mẫu lớp đa số về tỷ lệ $20:1$ kết hợp hiệu chỉnh xác suất Platt Scaling, tránh đẩy quá nhiều giao dịch bình thường vượt ngưỡng $0.5$. \textit{[Thành viên tổng hợp đối chiếu thêm với ANN, XGBoost và chỉ ra mô hình có Precision cao nhất cùng lý do.]}
-    \item \textbf{Chỉ số \texttt{F1}:} Vì \texttt{F1} là trung bình điều hòa giữa \texttt{Precision} và \texttt{Recall}, SVM ($0.756$) bỏ xa Logistic Regression ($0.105$) tại ngưỡng mặc định $0.5$ do tránh được bùng nổ cảnh báo giả. \textit{[Thành viên tổng hợp đối chiếu thêm với ANN, XGBoost để chốt mô hình cân bằng nhất tại $t = 0.5$.]}
+    \item \textbf{Chỉ số \texttt{AUPRC}:} \textbf{ANN} dẫn đầu toàn diện với \texttt{AUPRC} $= 0.825$, theo sau là \textbf{XGBoost} ($0.764$), đều vượt trội rõ rệt so với hai mô hình baseline là SVM ($0.719$) và Logistic Regression ($0.680$). Kết quả này cho thấy khả năng học biểu diễn phi tuyến nhiều tầng của ANN giúp tách biệt và xếp hạng xác suất giữa giao dịch gian lận và bình thường hiệu quả nhất trên toàn bộ dải ngưỡng.
+    \item \textbf{Chỉ số \texttt{Recall}:} Ở ngưỡng $t = 0.5$, \textbf{Logistic Regression} đạt độ nhạy cao nhất ($0.874$, bắt được $83/95$ ca) nhờ \texttt{class\_weight="balanced"} phạt nặng lỗi bỏ sót ($\sim 600$ lần), tiếp đến là SVM ($0.768$, $73/95$), ANN ($0.747$, $71/95$) và thấp nhất là XGBoost ($0.726$, $69/95$). Nguyên nhân ANN và XGBoost có \texttt{Recall} bảo thủ hơn tại $t = 0.5$ là vì cả hai được huấn luyện trực tiếp trên phân phối dữ liệu gốc mất cân bằng cực mạnh mà chưa điều chỉnh trọng số lớp hay hạ ngưỡng quyết định.
+    \item \textbf{Chỉ số \texttt{Precision}:} \textbf{XGBoost} vượt trội tuyệt đối với \texttt{Precision} $= 0.958$ (chỉ $3$ ca báo nhầm trên $56{,}651$ giao dịch bình thường), đứng thứ hai là \textbf{ANN} ($0.887$, $\text{FP} = 9$), bỏ xa SVM ($0.745$, $\text{FP} = 25$) và Logistic Regression ($0.056$, $\text{FP} = 1{,}403$). Nhờ giữ nguyên phân phối gốc cùng cơ chế điều chuẩn cây nông và dừng sớm, cả XGBoost lẫn ANN đều hạn chế tối đa cảnh báo giả.
+    \item \textbf{Chỉ số \texttt{F1}:} Vì \texttt{F1} là trung bình điều hòa giữa \texttt{Precision} và \texttt{Recall}, \textbf{XGBoost} đạt mức cân bằng cao nhất tại ngưỡng mặc định $t = 0.5$ với \texttt{F1} $= 0.826$, nhỉnh hơn \textbf{ANN} ($0.811$) và vượt xa SVM ($0.756$) cũng như Logistic Regression ($0.105$). Xét tổng thể tại $t = 0.5$, XGBoost phù hợp nhất cho yêu cầu chính xác cao và ít làm phiền khách hàng, trong khi ANN sở hữu tiềm năng xếp hạng xác suất (\texttt{AUPRC}) tốt nhất nếu tiếp tục tinh chỉnh ngưỡng quyết định để đẩy cao \texttt{Recall}.
 \end{itemize}
 
 \subsubsection{Phân tích Precision thấp của Logistic Regression và tác động khi điều chỉnh ngưỡng $t$}
