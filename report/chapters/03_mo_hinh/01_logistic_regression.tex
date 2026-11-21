@@ -61,8 +61,16 @@ Quy trình thực nghiệm trong tệp \texttt{src/model\_b.py} được thiết
     \item \textbf{Cô lập tập kiểm định và Đánh giá:} Trong mỗi \textit{fold}, bộ chuẩn hóa chỉ khớp tham số (\texttt{fit\_transform}) trên tập huấn luyện con rồi biến đổi (\texttt{transform}) sang tập kiểm định. Sau bước kiểm định chéo, mô hình cuối cùng được huấn luyện lại trên toàn bộ tập huấn luyện đã chuẩn hóa và đánh giá trên tập kiểm tra với ngưỡng phân loại $\lambda = 0.5$ thông qua mô-đun \texttt{src/metric\_model\_b.py}.
 \end{enumerate}
 
-\paragraph{3. Thiết lập siêu tham số}\mbox{}\\
-Thay vì sinh mẫu tổng hợp dễ làm nhiễu ranh giới phân tách tuyến tính, mô hình giữ nguyên dữ liệu gốc và xử lý mất cân bằng trực tiếp bằng tham số \texttt{class\_weight="balanced"}. Cấu hình chi tiết trong hàm \texttt{build\_model()} được tổng hợp tại Bảng~\ref{tab:lr_hyperparams}.
+\paragraph{3. Lý do lựa chọn \texttt{class\_weight="balanced"}}\mbox{}\\
+Trên tập huấn luyện có sự mất cân bằng nghiêm trọng giữa lớp bình thường và lớp gian lận ($226{,}602$ so với $378$ mẫu, tỷ lệ $\approx 600:1$). Nếu giữ trọng số đồng nhất, hàm mất mát và gradient bị lớp đa số chi phối, dẫn đến mô hình thiên lệch về lớp \texttt{Normal} và bỏ sót gian lận. Tham số \texttt{class\_weight="balanced"} được lựa chọn vì ba lý do chính:
+\begin{itemize}
+    \item \textbf{Cân bằng đóng góp hàm mất mát:} Trọng số $\alpha_c = \frac{N}{2 N_c}$ tự động phạt lỗi sai trên mỗi mẫu gian lận nặng gấp $\sim 600$ lần mẫu bình thường, buộc siêu phẳng dịch chuyển để nâng cao khả năng phát hiện lớp thiểu số (\texttt{Recall}).
+    \item \textbf{Bảo toàn phân phối dữ liệu thật:} Không loại bỏ bớt giao dịch hợp lệ như \textit{undersampling} (tránh mất thông tin nền của siêu phẳng tuyến tính) và không sinh mẫu nhân tạo như \textit{SMOTE} (tránh gây nhiễu vùng biên).
+    \item \textbf{Duy trì tốc độ tối ưu nhanh trên toàn bộ dữ liệu:} Vì hàm mất mát vẫn giữ tính lồi chặt và chi phí mỗi vòng lặp của L-BFGS chỉ tăng tuyến tính theo số lượng mẫu $N$, mô hình hội tụ nhanh trên toàn bộ tập huấn luyện gốc mà không cần cắt giảm kích thước dữ liệu.
+\end{itemize}
+
+\paragraph{4. Thiết lập siêu tham số}\mbox{}\\
+Cấu hình chi tiết các siêu tham số trong hàm \texttt{build\_model()} được tổng hợp tại Bảng~\ref{tab:lr_hyperparams}.
 
 \begin{table}[H]
 \centering

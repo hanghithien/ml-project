@@ -1,9 +1,105 @@
-% Phụ trách: Hiền
-% Nhiệm vụ báo cáo: Thảo luận — Phân tích và so sánh kết quả
-
 \subsection{Phân tích và so sánh giữa các mô hình}\label{subsec:phan-tich-so-sanh}
-% TODO (Hiền):
-% - Phân tích sự khác biệt về hiệu năng giữa các mô hình baseline (Logistic Regression, Decision Tree, SVM/Naive Bayes) và mô hình nâng cao (Ensemble Learning, Isolation Forest).
-% - Đánh giá sự đánh đổi (trade-off) giữa Precision và Recall trong bối cảnh thực tế.
 
-\textit{[Nội dung mục Phân tích và so sánh giữa các mô hình đang chờ hoàn thiện.]}
+\subsubsection{Phân tích kết quả từng mô hình}
+
+\paragraph{1. Logistic Regression (\texttt{src/model\_logistic.py})}\mbox{}
+\begin{itemize}
+    \item \textbf{Hiệu năng qua 5-fold CV:} Tại ngưỡng $t = 0.5$, mô hình đạt \texttt{AUPRC} ổn định trong khoảng $0.697 - 0.759$ (trung bình $\approx 0.740$) và \texttt{Recall} rất cao ($0.855 - 0.961$). Tuy nhiên, \texttt{Precision} chỉ dao động $0.049 - 0.064$ và \texttt{F1} đạt $0.093 - 0.119$.
+    \item \textbf{Hiệu năng trên tập Test:} Mô hình đạt \texttt{AUPRC} $= 0.680$, \texttt{Recall} $= 0.874$ (phát hiện $83/95$ giao dịch gian lận, bỏ sót $\text{FN} = 12$), \texttt{Precision} $= 0.056$ ($\text{FP} = 1{,}403$ trên $56{,}651$ giao dịch bình thường) và \texttt{F1} $= 0.105$.
+    \item \textbf{Ưu điểm:} Tốc độ huấn luyện nhanh, kiến trúc đơn giản dễ diễn giải trọng số và nhạy với lớp thiểu số (\texttt{Recall} cao), đóng vai trò mô hình cơ sở (\textit{baseline}) hiệu quả để sàng lọc gian lận.
+    \item \textbf{Nhược điểm:} Do là bộ phân lớp tuyến tính nên không biểu diễn được các ranh giới phi tuyến phức tạp; đồng thời việc dùng \texttt{class\_weight="balanced"} khiến mô hình tạo nhiều cảnh báo giả tại ngưỡng mặc định $t = 0.5$.
+\end{itemize}
+
+\paragraph{2. Support Vector Machine -- Kernel RBF (\texttt{src/model\_svm.py})}\mbox{}
+\begin{itemize}
+    \item \textbf{Hiệu năng qua 5-fold CV:} Mô hình đạt \texttt{AUPRC} từ $0.672$ đến $0.807$ (Fold 4 cao nhất đạt $0.807$), \texttt{Recall} trong khoảng $0.737 - 0.868$, \texttt{Precision} đạt $0.492 - 0.735$ và \texttt{F1} đạt $0.628 - 0.772$.
+    \item \textbf{Hiệu năng trên tập Test:} Tại $t = 0.5$, mô hình đạt \texttt{AUPRC} $= 0.719$, \texttt{Recall} $= 0.768$ ($73/95$ ca gian lận, $\text{FN} = 22$), \texttt{Precision} $= 0.745$ (chỉ $\text{FP} = 25$ ca báo nhầm) và \texttt{F1} $= 0.756$.
+    \item \textbf{Ưu điểm:} Ranh giới phi tuyến của hạt nhân RBF kết hợp chuẩn hóa \texttt{StandardScaler} và giảm mẫu \texttt{RandomUnderSampler(0.05)} giúp cân bằng tốt \texttt{Precision}--\texttt{Recall} ngay tại $t = 0.5$, giảm hơn $56$ lần số cảnh báo giả so với Logistic Regression.
+    \item \textbf{Nhược điểm:} Độ nhạy \texttt{Recall} tại $t = 0.5$ thấp hơn Logistic Regression (sót thêm $10$ ca gian lận), thời gian huấn luyện lâu hơn và kết quả giữa các \textit{fold} biến thiên nhẹ do lấy mẫu ngẫu nhiên lớp đa số.
+\end{itemize}
+
+\paragraph{3. Artificial Neural Network -- ANN (\texttt{src/model\_ANN.py})}\mbox{}
+% TODO (Thành viên phụ trách tổng hợp / ANN): Điền số liệu thực nghiệm và nhận xét theo 4 ý mẫu dưới đây.
+\begin{itemize}
+    \item \textbf{Hiệu năng qua 5-fold CV:} \textit{[Điền khoảng dao động AUPRC, Recall, Precision, F1 qua 5 fold của mô hình ANN.]}
+    \item \textbf{Hiệu năng trên tập Test:} \textit{[Điền AUPRC, Recall, Precision, F1 và TP/FP/FN/TN trên tập Test tại $t = 0.5$.]}
+    \item \textbf{Ưu điểm:} \textit{[Nêu ưu điểm chính của ANN trên bộ dữ liệu này, ví dụ khả năng học biểu diễn phi tuyến nhiều tầng.]}
+    \item \textbf{Nhược điểm:} \textit{[Nêu nhược điểm chính, ví dụ nhạy cảm với siêu tham số, dễ overfitting hoặc ít khả năng diễn giải.]}
+\end{itemize}
+
+\paragraph{4. Ensemble Learning -- XGBoost (\texttt{src/model\_ensemble.py})}\mbox{}
+% TODO (Thành viên phụ trách tổng hợp / Ensemble): Điền số liệu thực nghiệm và nhận xét theo 4 ý mẫu dưới đây.
+\begin{itemize}
+    \item \textbf{Hiệu năng qua 5-fold CV:} \textit{[Điền khoảng dao động AUPRC, Recall, Precision, F1 qua 5 fold của mô hình XGBoost.]}
+    \item \textbf{Hiệu năng trên tập Test:} \textit{[Điền AUPRC, Recall, Precision, F1 và TP/FP/FN/TN trên tập Test tại $t = 0.5$.]}
+    \item \textbf{Ưu điểm:} \textit{[Nêu ưu điểm chính của XGBoost trên dữ liệu dạng bảng mất cân bằng, ví dụ khả năng chia cắt phi tuyến mạnh và ổn định.]}
+    \item \textbf{Nhược điểm:} \textit{[Nêu nhược điểm chính, ví dụ nguy cơ thiên lệch về lớp đa số nếu không tinh chỉnh trọng số/ngưỡng hoặc chi phí tinh chỉnh siêu tham số.]}
+\end{itemize}
+
+\subsubsection{Phân tích so sánh các mô hình tại ngưỡng $t = 0.5$}
+
+Bảng~\ref{tab:compare_4_models_t05} tổng hợp kết quả đánh giá của bốn mô hình trên tập Test tại ngưỡng mặc định $t = 0.5$ sử dụng bộ độ đo thống nhất từ \texttt{src/metrics.py}.
+
+\begin{table}[H]
+\centering
+\caption{So sánh hiệu năng 4 mô hình trên tập Test tại ngưỡng $t = 0.5$ (\texttt{src/metrics.py})}
+\label{tab:compare_4_models_t05}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Mô hình} & \textbf{AUPRC} & \textbf{Recall} & \textbf{Precision} & \textbf{F1} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
+\hline
+Logistic Regression & $0.680$ & $0.874$ & $0.056$ & $0.105$ & $83$ & $1403$ & $12$ & $55248$ \\
+\hline
+SVM (RBF) & $0.719$ & $0.768$ & $0.745$ & $0.756$ & $73$ & $25$ & $22$ & $56626$ \\
+\hline
+ANN & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ \\
+\hline
+XGBoost & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ & $[...]$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Chỉ số \texttt{AUPRC}:} Trong hai mô hình baseline của nhóm tuyến tính/lề, SVM ($0.719$) vượt trội hơn Logistic Regression ($0.680$) nhờ hạt nhân RBF nắm bắt được cấu trúc phi tuyến cục bộ của các giao dịch gian lận. \textit{[Thành viên tổng hợp bổ sung so sánh với ANN, XGBoost và chỉ ra mô hình có AUPRC cao nhất trong 4 mô hình cùng nguyên nhân.]}
+    \item \textbf{Chỉ số \texttt{Recall}:} Ở ngưỡng $t = 0.5$, Logistic Regression đạt độ nhạy rất cao ($0.874$, vượt mức $0.768$ của SVM) do cơ chế \texttt{class\_weight="balanced"} phạt nặng lỗi bỏ sót lớp gian lận ($\sim 600$ lần), kéo siêu phẳng dịch sang phía lớp bình thường. \textit{[Thành viên tổng hợp đối chiếu thêm với ANN, XGBoost và kết luận mô hình có Recall cao nhất tại $t = 0.5$.]}
+    \item \textbf{Chỉ số \texttt{Precision}:} SVM đạt $0.745$, cao hơn vượt trội so với $0.056$ của Logistic Regression nhờ chỉ giảm mẫu lớp đa số về tỷ lệ $20:1$ kết hợp hiệu chỉnh xác suất Platt Scaling, tránh đẩy quá nhiều giao dịch bình thường vượt ngưỡng $0.5$. \textit{[Thành viên tổng hợp đối chiếu thêm với ANN, XGBoost và chỉ ra mô hình có Precision cao nhất cùng lý do.]}
+    \item \textbf{Chỉ số \texttt{F1}:} Vì \texttt{F1} là trung bình điều hòa giữa \texttt{Precision} và \texttt{Recall}, SVM ($0.756$) bỏ xa Logistic Regression ($0.105$) tại ngưỡng mặc định $0.5$ do tránh được bùng nổ cảnh báo giả. \textit{[Thành viên tổng hợp đối chiếu thêm với ANN, XGBoost để chốt mô hình cân bằng nhất tại $t = 0.5$.]}
+\end{itemize}
+
+\subsubsection{Phân tích Precision thấp của Logistic Regression và tác động khi điều chỉnh ngưỡng $t$}
+
+Tại ngưỡng mặc định $t = 0.5$, \texttt{Precision} của Logistic Regression chỉ đạt $0.056$ ($5.6\%$, tức rất thấp dù \texttt{AUPRC} $= 0.680$ vẫn tốt). Nguyên nhân đến từ hai yếu tố cộng hưởng: (1) \textbf{mất cân bằng nền cực đoan} ($56{,}651$ mẫu bình thường so với $95$ mẫu gian lận trên tập Test) khiến chỉ $2.48\%$ tỷ lệ báo nhầm trên lớp \texttt{Normal} cũng tạo ra tới $\text{FP} = 1{,}403$; và (2) tham số \texttt{class\_weight="balanced"} làm dịch xác suất dự đoán $\hat{p}$ lên rất cao, khiến mốc $t = 0.5$ trở thành ngưỡng cắt quá thấp.
+
+Bảng~\ref{tab:lr_threshold_sweep} trình bày kết quả thực nghiệm khi giữ nguyên mô hình Logistic Regression đã huấn luyện và tăng dần ngưỡng quyết định $t$:
+
+\begin{table}[H]
+\centering
+\caption{Biến thiên các chỉ số của Logistic Regression trên tập Test khi tăng ngưỡng $t$}
+\label{tab:lr_threshold_sweep}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Ngưỡng $t$} & \textbf{AUPRC} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{TP} & \textbf{FP} & \textbf{FN} \\
+\hline
+$0.500000$ (mặc định) & $0.680$ & $0.056$ & $\mathbf{0.874}$ & $0.105$ & $83$ & $1403$ & $12$ \\
+\hline
+$0.900000$ & $0.680$ & $0.292$ & $0.821$ & $0.431$ & $78$ & $189$ & $17$ \\
+\hline
+$0.990000$ & $0.680$ & $0.652$ & $0.789$ & $0.714$ & $75$ & $40$ & $20$ \\
+\hline
+$0.999000$ & $0.680$ & $0.771$ & $0.779$ & $0.775$ & $74$ & $22$ & $21$ \\
+\hline
+$0.999900$ & $0.680$ & $0.793$ & $0.768$ & $0.781$ & $73$ & $19$ & $22$ \\
+\hline
+$0.999999$ (tối ưu OOF) & $0.680$ & $\mathbf{0.878}$ & $0.758$ & $\mathbf{0.814}$ & $72$ & $\mathbf{10}$ & $23$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Từ Bảng~\ref{tab:lr_threshold_sweep}, việc điều chỉnh tăng ngưỡng $t$ mang lại ba ý nghĩa quan trọng:
+\begin{enumerate}
+    \item \textbf{Khẳng định năng lực thực chất của mô hình:} Chỉ số \texttt{AUPRC} $= 0.680$ giữ nguyên không đổi theo $t$. Khi nâng ngưỡng lên $t = 0.999$ hoặc ngưỡng tối ưu $t = 0.999999$ (xác định qua kiểm định chéo \textit{Out-Of-Fold}), \texttt{Precision} tăng mạnh từ $5.6\%$ lên $77.1\% - 87.8\%$, số cảnh báo giả giảm hơn $140$ lần (từ $1{,}403$ xuống còn $10$ ca), đưa \texttt{F1} lên tới $0.814$. Điều này chứng minh nhược điểm tại $t = 0.5$ hoàn toàn nằm ở điểm cắt xác suất chứ không phải do mô hình học kém.
+    \item \textbf{Làm rõ sự đánh đổi Precision--Recall:} Khi tăng $t$ từ $0.5$ lên $0.999999$, \texttt{Precision} tăng vọt nhưng \texttt{Recall} giảm tương ứng từ $0.874$ xuống $0.758$ (bỏ sót thêm $11$ ca gian lận). Ngược lại, từ mốc $0.999999$ hạ xuống $0.5$, để bắt thêm $11$ ca gian lận phải đánh đổi bằng $1{,}393$ ca báo nhầm thêm.
+    \item \textbf{Ý nghĩa triển khai thực tế:} Khi áp dụng \texttt{class\_weight="balanced"}, cần tinh chỉnh ngưỡng $t$ trên tập kiểm định chéo thay vì dùng cứng $t = 0.5$. Tùy mục tiêu nghiệp vụ ngân hàng, hệ thống có thể chọn $t \approx 0.999999$ nếu muốn tự động khóa thẻ chính xác cao, hoặc chọn ngưỡng trung gian ($t \approx 0.99$) để yêu cầu xác thực bổ sung (OTP) nhằm vừa giữ \texttt{Recall} cao vừa tránh quá tải cảnh báo giả.
+\end{enumerate}
