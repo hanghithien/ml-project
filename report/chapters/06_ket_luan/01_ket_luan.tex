@@ -1,9 +1,13 @@
-% Phụ trách: Hiền
-% Nhiệm vụ báo cáo: Kết luận và hướng phát triển — Kết luận
-
 \subsection{Kết luận}\label{subsec:ket-luan}
-% TODO (Hiền):
-% - Tóm tắt lại toàn bộ quy trình đã thực hiện (tiền xử lý, xây dựng baseline, mô hình nâng cao, đánh giá).
-% - Nhấn mạnh những kết quả chính đạt được và mô hình tốt nhất cho bài toán.
 
-\textit{[Nội dung mục Kết luận đang chờ hoàn thiện.]}
+Báo cáo này xây dựng và so sánh các mô hình học máy cho bài toán phát hiện gian lận thẻ tín dụng trên bộ dữ liệu giao dịch có tỷ lệ gian lận chỉ khoảng $0{,}17\%$. Quy trình thực hiện gồm bốn bước chính. Thứ nhất, dữ liệu được tiền xử lý: loại bỏ các bản ghi trùng lặp, biến đổi \texttt{Amount} bằng $\log(1+x)$ để giảm độ lệch, mã hóa chu kỳ của biến thời gian bằng $\sin$ và $\cos$ của giờ trong ngày, và chuẩn hóa bằng \texttt{RobustScaler} được khớp riêng trên từng \textit{fold} huấn luyện để tránh rò rỉ dữ liệu. Thứ hai, dữ liệu được chia phân tầng thành tập huấn luyện ($80\%$) và tập kiểm tra ($20\%$), kèm kiểm định chéo 5-fold phân tầng. Thứ ba, nhóm xây dựng các mô hình baseline (Logistic Regression, SVM với kernel RBF, mạng nơ-ron ANN) và mô hình nâng cao (XGBoost). Cuối cùng, các mô hình được đánh giá bằng bộ metric thống nhất: \texttt{AUPRC} làm metric chính, cùng \texttt{Recall}, \texttt{Precision}, \texttt{F1} và ma trận nhầm lẫn, vì \texttt{Accuracy} và \texttt{ROC-AUC} dễ cho kết quả cao giả tạo trên dữ liệu mất cân bằng nghiêm trọng.
+
+Các kết quả chính có thể tóm tắt như sau.
+\begin{itemize}
+    \item \textbf{Mô hình phi tuyến cho kết quả tốt nhất.} ANN và XGBoost vượt rõ rệt Logistic Regression và SVM: \texttt{AUPRC} trung bình trên kiểm định chéo lần lượt là $0{,}818$ và $0{,}822$, so với $0{,}740$ và $0{,}733$. Trên tập kiểm tra, ANN đạt \texttt{AUPRC} cao nhất ($0{,}825$), còn XGBoost đạt \texttt{Precision} ($0{,}958$) và \texttt{F1} ($0{,}826$) cao nhất tại ngưỡng $0{,}5$ với chỉ $3$ cảnh báo giả.
+    \item \textbf{Chưa đủ cơ sở chọn giữa ANN và XGBoost.} Chênh lệch giữa hai mô hình nhỏ so với độ biến thiên giữa các \textit{fold}, hai mô hình đổi thứ hạng giữa kiểm định chéo và tập kiểm tra, và tập kiểm tra chỉ có $95$ ca gian lận. Nếu cần chọn một mô hình, XGBoost là lựa chọn hợp lý hơn nhờ \texttt{F1} và \texttt{Precision} cao nhất, độ ổn định tốt hơn (độ lệch chuẩn \texttt{AUPRC} $0{,}032$ so với $0{,}057$ của ANN) và chi phí huấn luyện thấp hơn, ANN phù hợp hơn khi ưu tiên khả năng xếp hạng xác suất.
+    \item \textbf{Cách xử lý mất cân bằng và ngưỡng ảnh hưởng mạnh đến kết quả.} Logistic Regression với \texttt{class\_weight="balanced"} đạt \texttt{Recall} cao nhất ($0{,}874$) nhưng \texttt{Precision} chỉ $0{,}056$ tại $t=0{,}5$. Khi nâng ngưỡng lên giá trị tối ưu xác định bằng kiểm định chéo, \texttt{F1} của mô hình này tăng từ $0{,}105$ lên $0{,}814$ trong khi \texttt{AUPRC} giữ nguyên, tức hiệu năng thấp ở ngưỡng mặc định chủ yếu do điểm cắt xác suất chứ không phải do khả năng phân loại kém.
+    \item \textbf{Luôn tồn tại sự đánh đổi giữa Precision và Recall.} Mô hình bắt được nhiều gian lận hơn thì tạo thêm cảnh báo giả: Logistic Regression bỏ sót $12$ ca nhưng tạo $1\,403$ cảnh báo giả, trong khi XGBoost chỉ có $3$ cảnh báo giả nhưng bỏ sót $26$ ca. Lựa chọn giữa hai hướng phụ thuộc vào tỷ lệ chi phí giữa bỏ sót gian lận và xử lý một cảnh báo sai của hệ thống thực tế.
+\end{itemize}
+
+Tóm lại, với bộ dữ liệu này, các mô hình phi tuyến (ANN và XGBoost) phát hiện gian lận hiệu quả hơn các mô hình tuyến tính hoặc dựa trên lề, và việc lựa chọn metric (\texttt{AUPRC} thay vì \texttt{Accuracy}) cùng việc chọn ngưỡng quyết định quan trọng không kém việc chọn thuật toán. Các kết luận trên cần được hiểu cùng với những hạn chế đã nêu ở mục~\ref{subsec:han-che-thach-thuc}, đặc biệt là số lượng mẫu gian lận ít trong tập kiểm tra và điều kiện huấn luyện chưa đồng nhất giữa các mô hình.
