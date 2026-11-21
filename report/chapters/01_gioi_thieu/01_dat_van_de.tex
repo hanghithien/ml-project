@@ -1,19 +1,20 @@
 \subsection{Giới thiệu vấn đề}\label{subsec:gioi-thieu-van-de}
-Ngày nay, việc thanh toán đang ngày càng trở nên tiện lợi khi mà người dùng không cần sử dụng tiền mặt và sự triển của thương mại điện tử đang ngày càng thúc đẩy các giao dịch thông qua thẻ tín trở nên phổ biến hơn. Tuy nhiên, sự tiện lợi đó cũng đi kèm với nhiều rủi ro về lỗ hổng bảo mật, và các giao dịch có hành vi gian lận đang ngày càng trở nên tinh vi và khó phát hiện hơn. Những giao bất chính này không chỉ gây ra thiệt hại về mặt tài chính mà còn làm xói mòn niềm tin của những khách hàng đối với các hệ thống ngân hàng. 
+Ngày nay, việc thanh toán đang ngày càng trở nên tiện lợi khi mà người dùng không cần sử dụng tiền mặt và sự phát triển của thương mại điện tử đang ngày càng thúc đẩy các giao dịch thông qua thẻ tín dụng trở nên phổ biến hơn. Tuy nhiên, sự tiện lợi đó cũng đi kèm với nhiều rủi ro về lỗ hổng bảo mật, và các giao dịch có hành vi gian lận đang ngày càng trở nên tinh vi và khó phát hiện hơn. Những giao dịch bất chính này không chỉ gây ra thiệt hại về mặt tài chính mà còn làm xói mòn niềm tin của những khách hàng đối với các hệ thống ngân hàng. 
 
-Do đó, việc xây dựng một hệ thống tự động có khả năng phát hiện và ngăn chặn các giao dịch bất thường là việc vô cùng thiết thực và cần thiết đối với các doanh nghiệp trong lĩnh tài chính nói chung và ngân hàng nói riêng 
+Do đó, việc xây dựng một hệ thống tự động có khả năng phát hiện và ngăn chặn các giao dịch bất thường là việc vô cùng thiết thực và cần thiết đối với các doanh nghiệp trong lĩnh vực tài chính nói chung và ngân hàng nói riêng 
 
 \subsection{Đặt vấn đề}\label{subsec:dat-van-de}
 Bài toán phát hiện gian lận thẻ tín dụng là bài toán phân loại nhị phân dựa trên dữ liệu lịch sử giao dịch. Tuy nhiên, để giải quyết bài toán này cần phải đối mặt với ba thách thức:
 \begin{itemize}
-    \item \textbf{Sự mất cân bằng dữ liệu nghiêm trọng:} Trong thực tế, số lượng giao dịch gian lận chỉ chiếm tỷ lệ cực nhỏ ($0.17\%$) so với tổng các giao dịch hợp lệ. Sự mất cân bằng này khiến cho việc chọn metric đánh giá trở nên khó khăn khi mà các chỉ số như \textbf{Accurancy} hay \textbf{ROC} sẽ dễ gây hiểu lầm do bị chi phối bởi lớp đa số; do đó, bài toán cần ưu tiên các metric phù hợp hơn như \textbf{Precision}, \textbf{Recall}, \textbf{F1-score} hoặc \textbf{PR-AUC}
+    \item \textbf{Sự mất cân bằng dữ liệu nghiêm trọng:} Trong thực tế, số lượng giao dịch gian lận chỉ chiếm tỷ lệ cực nhỏ ($0.17\%$) so với tổng các giao dịch hợp lệ. Sự mất cân bằng này khiến cho việc chọn metric đánh giá trở nên khó khăn khi mà các chỉ số như \textbf{Accuracy} hay \textbf{ROC} sẽ dễ gây hiểu lầm do bị chi phối bởi lớp đa số; do đó, bài toán cần ưu tiên các metric phù hợp hơn như \textbf{Precision}, \textbf{Recall}, \textbf{F1-score} hoặc \textbf{PR-AUC}
     \item \textbf{Trade-off giữa Precision và Recall:} Nếu mô hình bỏ sót giao dịch gian lận, ngân hàng sẽ phải gánh chịu các thiệt hại về tài chính. Ngược lại nếu mô hình dự đoán nhầm các giao dịch hợp lệ thành giao dịch gian lận, thẻ của khách hàng có thể sẽ bị khóa và gây gián đoạn giao dịch, ảnh hưởng tới trải nghiệm của khách hàng.
     \item \textbf{Tính bảo mật và ẩn danh dữ liệu:} Để bảo vệ quyền riêng tư của chủ thẻ, dữ liệu đầu vào sẽ được xử lý thông qua biến đổi PCA, từ đó khiến việc nhận diện và đánh giá ý nghĩa và vai trò của các feature gặp nhiều hạn chế do không biết ý nghĩa nghiệp vụ của đặc trưng đó là gì.
 \end{itemize}
 
-\subsection{Mục tiêu dự án}\label{subsec:muc-tieu-du-an}
-Trong bài tập lớn này, nhóm sẽ tập trụng và các mục tiêu chính sau:
+\subsection{Mục tiêu dự án}
+Trong bài tập lớn này, nhóm tập trung vào các mục tiêu cốt lõi sau:
 \begin{itemize}
-    \item Tối ưu hóa khả năng phát hiện giao dịch gian lận bằng cách nâng cao chỉ số \textbf{Recall} và \textbf{PR-AUC} trong khi vân giữ \textbf{Precision} ở mức có thể chấp nhận.
-    
+    \item \textbf{Khai phá và tiền xử lý dữ liệu chuyên sâu:} Phân tích đặc điểm phân phối, quy luật hành vi của giao dịch gian lận và xây dựng quy trình tiền xử lý (làm sạch dữ liệu trùng lặp, biến đổi đặc trưng thời gian tuần hoàn, chuẩn hóa kháng ngoại lai) nhằm ngăn ngừa rò rỉ dữ liệu.
+    \item \textbf{Giải quyết bài toán mất cân bằng lớp nghiêm trọng:} Thử nghiệm và đánh giá hiệu quả của các chiến kỹ thuật xử lý mất cân bằng dữ liệu kết hợp với Stratified K-Fold.
+    \item \textbf{Xây dựng, so sánh và tối ưu hóa mô hình học máy:} Huấn luyện đa dạng các thuật toán phân loại từ đó tối ưu hóa khả năng phát hiện gian lận thông qua các chỉ số chuyên biệt như \textbf{Recall}, \textbf{F1-Score} và \textbf{PR-AUC} trong khi vẫn duy trì \textbf{Precision} ở mức chấp nhận được.
 \end{itemize}
