@@ -76,5 +76,5 @@ Final/
 
 | Notebook | Nội dung |
 |---|---|
-| `notebook/EDA.ipynb` | Phân tích khám phá dữ liệu. Cần có `data/raw/creditcard.csv` (chạy một lần `python -m src.preprocess` để tự tải). |
+| `notebook/EDA.ipynb` | Phân tích khám phá dữ liệu.|
 | `notebook/test_metric.ipynb` | Chạy cả 4 mô hình, tạo bảng so sánh `outputs/model_comparison.csv` và các hình `compare_*.png` (mục 4). |
