@@ -1,9 +1,31 @@
-% Phụ trách: Hiền
-% Nhiệm vụ báo cáo: Thảo luận — Hạn chế và thách thức
-
 \subsection{Hạn chế và thách thức}\label{subsec:han-che-thach-thuc}
-% TODO (Hiền):
-% - Các hạn chế của dữ liệu (đặc trưng PCA ẩn danh, mất cân bằng lớp, thiếu thông tin ngữ cảnh...).
-% - Hạn chế của phương pháp thử nghiệm (thời gian huấn luyện, độ nhạy với ngưỡng phân loại, khả năng tổng quát hóa...).
 
-\textit{[Nội dung mục Hạn chế và thách thức đang chờ hoàn thiện.]}
+\subsubsection{Thách thức gặp phải}
+\begin{itemize}
+    \item \textbf{Mất cân bằng lớp cực đoan:} Gian lận chỉ chiếm khoảng $0.17\%$ số giao dịch ($95$ ca trên $56{,}746$ giao dịch của tập Test). Các kỹ thuật xử lý mất cân bằng cho kết quả rất khác nhau: \texttt{class\_weight="balanced"} giúp Logistic Regression đạt \texttt{Recall} $= 0.874$ nhưng làm \texttt{Precision} chỉ còn $0.056$ ($1{,}403$ cảnh báo giả), trong khi ANN và XGBoost không xử lý lại cho \texttt{Precision} từ $0.887$ đến $0.958$ nhưng \texttt{Recall} thấp hơn ($0.726 - 0.747$). Không có cấu hình nào tối ưu đồng thời cả hai chỉ số tại ngưỡng mặc định.
+
+    \item \textbf{Lựa chọn ngưỡng quyết định:} Ngưỡng $t = 0.5$ không phù hợp với mọi mô hình. Bảng~\ref{tab:lr_threshold_sweep} cho thấy với Logistic Regression, \texttt{F1} tăng từ $0.105$ lên $0.814$ chỉ nhờ nâng ngưỡng, trong khi \texttt{AUPRC} không đổi. Điều này đặt ra thách thức: chọn ngưỡng phải dựa trên tập kiểm định (hoặc kiểm định chéo) chứ không phải tập Test, và còn phụ thuộc vào chi phí thực tế của từng loại lỗi, vốn không có sẵn trong dữ liệu.
+
+    \item \textbf{Chọn metric phù hợp:} \texttt{Accuracy} và \texttt{ROC-AUC} dễ cho kết quả ``đẹp giả'' khi lớp Normal chiếm gần như toàn bộ dữ liệu, nên nhóm phải dùng \texttt{AUPRC} làm metric chính và đọc các metric phụ thuộc ngưỡng (\texttt{Recall}, \texttt{Precision}, \texttt{F1}) cùng với ngưỡng đã dùng. Hai nhóm metric này có thể cho thứ tự khác nhau (ANN cao hơn XGBoost về \texttt{AUPRC} nhưng thấp hơn về \texttt{F1}), nên việc kết luận ``mô hình tốt nhất'' phụ thuộc vào tiêu chí.
+
+    \item \textbf{Độ biến thiên giữa các \textit{fold}:} Mỗi \textit{fold} validation chỉ có $75 - 76$ ca gian lận, nên chỉ một vài ca cũng làm các metric dao động mạnh. Ví dụ \texttt{Recall} của ANN có độ lệch chuẩn $\approx 0.103$ giữa các \textit{fold}, và \texttt{Precision} của SVM dao động từ $0.492$ đến $0.735$.
+
+    \item \textbf{Đặc trưng ẩn danh:} Các đặc trưng \texttt{V1}--\texttt{V28} của bộ dữ liệu đã được biến đổi ẩn danh (theo mô tả của bộ dữ liệu là kết quả của PCA), nên khó diễn giải vì sao một giao dịch bị coi là gian lận và khó xây dựng thêm đặc trưng dựa trên kiến thức nghiệp vụ.
+\end{itemize}
+
+\subsubsection{Hạn chế của nghiên cứu}
+\begin{itemize}
+    \item \textbf{Số mẫu gian lận ở tập Test rất ít:} Với $95$ ca gian lận, mỗi ca tương ứng khoảng $1.05$ điểm phần trăm \texttt{Recall}. Khoảng tin cậy $95\%$ (Wilson) của \texttt{Recall} khoảng $[0.65;\, 0.82]$ với ANN và $[0.63;\, 0.81]$ với XGBoost, chồng lấn gần như hoàn toàn. Do đó chênh lệch giữa ANN, XGBoost và SVM trên tập Test chưa có ý nghĩa thống kê, và thứ hạng của ANN và XGBoost đổi chỗ giữa kiểm định chéo và tập Test.
+
+    \item \textbf{Chỉ một lần chia dữ liệu và một hạt giống ngẫu nhiên:} Toàn bộ kết quả dùng \texttt{random\_state}$=42$. Điều này đảm bảo tái hiện được nhưng nghĩa là chưa đánh giá độ nhạy của kết quả với cách chia dữ liệu hoặc khởi tạo ngẫu nhiên (đặc biệt quan trọng với ANN).
+
+    \item \textbf{Điều kiện huấn luyện không đồng nhất giữa các mô hình:} Logistic Regression dùng \texttt{class\_weight}, SVM dùng giảm mẫu $20:1$, còn ANN và XGBoost không xử lý mất cân bằng, và siêu tham số chưa được tinh chỉnh (dùng cấu hình cố định). Vì vậy so sánh ở đây phản ánh cả thuật toán lẫn cấu hình huấn luyện, chưa tách riêng được đóng góp của từng yếu tố. Chẳng hạn, SVM chỉ học trên một phần nhỏ dữ liệu Normal nên khó biết hiệu năng thấp hơn ANN là do thuật toán hay do lượng dữ liệu.
+
+    \item \textbf{Ngưỡng quyết định cố định:} Kết quả chính dùng $t = 0.5$ cho tất cả mô hình. Việc chọn ngưỡng tối ưu trên tập kiểm định mới được thực hiện cho Logistic Regression ở mục phân tích ngưỡng, chưa áp dụng cho SVM, ANN và XGBoost, nên Hình~\ref{fig:threshold-sweep} (vẽ trên tập Test) chỉ mang tính phân tích, chưa phải kết quả đã hiệu chỉnh.
+
+    \item \textbf{Đánh giá chưa tính đến chi phí thực tế:} Các metric coi mọi giao dịch gian lận có giá trị như nhau, trong khi thiệt hại thực tế phụ thuộc vào số tiền của giao dịch và chi phí xử lý một cảnh báo. Phép so sánh tỷ lệ chi phí hòa vốn $c_{FN}/c_{FP}$ ở trên chỉ mang tính minh họa vì không có số liệu chi phí thật.
+
+    \item \textbf{Chia dữ liệu theo phân tầng ngẫu nhiên, không theo thời gian:} Theo cột \texttt{Time}, dữ liệu chỉ trải trong khoảng hai ngày và nhóm chia ngẫu nhiên có phân tầng, nên chưa kiểm tra được khả năng tổng quát hóa theo thời gian (dự đoán giao dịch tương lai) hay hiện tượng trôi dữ liệu (\textit{concept drift}), vốn phổ biến trong phát hiện gian lận khi thủ đoạn thay đổi. Ngoài ra, thực nghiệm chỉ dùng một bộ dữ liệu nên chưa chứng minh được kết quả tổng quát cho các ngân hàng hoặc thị trường khác.
+
+    \item \textbf{Phạm vi mô hình:} Nhóm chưa thử các hướng như phát hiện bất thường không giám sát (ví dụ Isolation Forest), tinh chỉnh siêu tham số có hệ thống, hoặc kết hợp nhiều mô hình (\textit{stacking}), nên chưa biết giới hạn hiệu năng thực sự của bộ dữ liệu.
+\end{itemize}
