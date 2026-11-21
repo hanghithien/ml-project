@@ -21,6 +21,12 @@ __pycache__/
 *.vrb
 *.xdv
 *.lol
+*.cls
+
+report/chapters
+report/code
+report/refs
+
 # Build directories
 build/
 out/
