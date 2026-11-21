@@ -2,9 +2,44 @@
 % Nhiệm vụ: Xây dựng metric đánh giá — Lựa chọn các metric cần được sử dụng và giải thích lý do
 
 \subsection{Lựa chọn metric đánh giá và lý do}\label{subsec:metric-danh-gia}
-% TODO (Hiền): Trình bày các độ đo đánh giá được xây dựng trong src/metrics.py và giải thích lý do lựa chọn:
-% - Tại sao Accuracy không phù hợp trên dữ liệu mất cân bằng nghiêm trọng.
-% - Ý nghĩa và công thức của Precision, Recall, F1-score, AUPRC (Precision-Recall AUC), ROC-AUC...
-% - Cách chọn ngưỡng quyết định (threshold) phù hợp với bài toán phát hiện gian lận.
 
-\textit{[Nội dung mục Lựa chọn metric đánh giá và lý do đang chờ hoàn thiện.]}
+\subsubsection{Đặc điểm dữ liệu và yêu cầu đối với metric}
+Bộ dữ liệu giao dịch thẻ tín dụng có tỷ lệ gian lận (Fraud, nhãn 1) rất thấp, chỉ khoảng $0{,}17\%$ tổng số giao dịch. Với dữ liệu mất cân bằng nghiêm trọng như vậy, metric đánh giá cần phản ánh trực tiếp khả năng phát hiện lớp thiểu số (Fraud) thay vì bị chi phối bởi lớp đa số (Normal). Ngoài ra, hai loại sai sót trong bài toán này có hậu quả khác nhau, một loại bỏ sót một giao dịch gian lận gây thiệt hại tài chính trực tiếp, trong khi loại còn lại cảnh báo nhầm một giao dịch hợp lệ gây phiền toái cho khách hàng và tốn chi phí kiểm tra.
+
+\subsubsection{Các metric được lựa chọn}
+Các metric bên dưới đều được xây dựng từ confusion matrix, gồm bốn đại lượng là $TP$ (Fraud được phát hiện đúng), $FP$ (Normal bị báo nhầm là Fraud), $FN$ (Fraud bị bỏ sót) và $TN$ (Normal được nhận đúng).
+\begin{itemize}
+    \item \textbf{Recall} (độ nhạy) cho biết mô hình bắt được bao nhiêu phần trăm giao dịch gian lận thật:
+    \begin{equation}
+        \text{Recall} = \frac{TP}{TP + FN}.
+    \end{equation}
+    Recall thấp nghĩa là bỏ sót nhiều gian lận, nên đây là chỉ số quan trọng nhất về mặt nghiệp vụ.
+
+    \item \textbf{Precision} (độ chính xác của cảnh báo) cho biết trong số các giao dịch bị mô hình gắn nhãn Fraud, bao nhiêu là gian lận thật:
+    \begin{equation}
+        \text{Precision} = \frac{TP}{TP + FP}.
+    \end{equation}
+    Precision thấp nghĩa là phát sinh nhiều cảnh báo sai, làm tăng chi phí xử lý.
+
+    \item \textbf{F1-score} là trung bình điều hòa của Precision và Recall, dùng để cân bằng hai đại lượng thường đánh đổi lẫn nhau:
+    \begin{equation}
+        F_1 = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}.
+    \end{equation}
+    F1 chỉ cao khi cả Precision và Recall cùng cao, và không dùng $TN$ nên không bị lớp Normal chiếm đa số làm sai lệch.
+
+    \item \textbf{AUPRC} (Area Under the Precision--Recall Curve) là diện tích dưới đường cong Precision--Recall, được tính xấp xỉ bằng Average Precision:
+    \begin{equation}
+        \text{AUPRC} = \sum_{n} (R_n - R_{n-1}) \, P_n,
+    \end{equation}
+    trong đó $P_n$ và $R_n$ là Precision và Recall tại ngưỡng thứ $n$. AUPRC đo chất lượng xếp hạng xác suất của mô hình trên mọi ngưỡng quyết định, nên không phụ thuộc vào việc chọn ngưỡng. Mốc tham chiếu của một mô hình đoán ngẫu nhiên bằng tỷ lệ Fraud ($\approx 0{,}17\%$), do đó AUPRC cho thấy rõ mức cải thiện so với ngẫu nhiên. Vì các lý do này, nhóm chọn AUPRC làm \textbf{metric chính} để so sánh các mô hình.
+\end{itemize}
+
+\subsubsection{Không sử dụng Accuracy và ROC-AUC}
+Accuracy được tính bằng tỷ lệ dự đoán đúng trên toàn bộ mẫu. Với dữ liệu trên, một mô hình đơn giản dự đoán mọi giao dịch đều là Normal vẫn đạt Accuracy khoảng $99{,}8\%$ nhưng không phát hiện được giao dịch gian lận nào (Recall $=0$). Vì vậy Accuracy cho kết quả rất cao nhưng không phản ánh chất lượng thực của mô hình, nên nhóm không sử dụng Accuracy làm metric đánh giá.
+
+ROC-AUC dựa trên tỷ lệ dương tính giả $FPR = \frac{FP}{FP + TN}$. Do số mẫu Normal ($TN$) rất lớn, $FPR$ luôn nhỏ ngay cả khi mô hình báo nhầm hàng trăm giao dịch, khiến đường ROC trông rất tốt và ROC-AUC cao dù Precision thấp. Ngược lại, Precision và đường cong Precision--Recall chỉ xét lớp Fraud nên phản ánh đúng chi phí của các cảnh báo sai. Do đó ROC-AUC chỉ mang tính tham khảo trong bài toán này.
+
+\subsubsection{Lựa chọn ngưỡng quyết định}
+Các mô hình trả về xác suất $\hat{p}$ thuộc lớp Fraud; giao dịch được dự đoán là Fraud khi $\hat{p} \ge \tau$, với $\tau$ là ngưỡng quyết định. Recall, Precision, F1 và ma trận nhầm lẫn đều phụ thuộc vào $\tau$: hạ $\tau$ thì Recall tăng nhưng Precision giảm, và ngược lại. Ngưỡng mặc định $\tau = 0{,}5$ thường không phù hợp với dữ liệu mất cân bằng, đặc biệt khi mô hình được huấn luyện với trọng số lớp (class weight) làm xác suất đầu ra bị lệch.
+
+Trong thực nghiệm, nhóm sử dụng ngưỡng mặc định $\tau = 0{,}5$ cho tất cả mô hình để đảm bảo so sánh công bằng. Vì vậy các chỉ số Recall, Precision, F1 cần được đọc cùng với ngưỡng này, còn AUPRC được dùng để so sánh mô hình một cách độc lập với ngưỡng. Việc tối ưu ngưỡng được đề xuất như hướng phát triển (mục~\ref{sec:ket-luan}).
